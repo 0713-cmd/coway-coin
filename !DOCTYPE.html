@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO-IN with Looker 모집 안내</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background-color: #fdfeff; 
+            color: #1e293b;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-gradient {
+            background: radial-gradient(circle at top right, #eff6ff 0%, #ffffff 100%);
+        }
+
+        .step-line::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+
+        .hover-lift {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .hover-lift:hover {
+            transform: translateY(-8px);
+        }
+    </style>
+</head>
+<body class="selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Hero Section -->
+    <header class="hero-gradient pt-24 pb-16 px-6 relative overflow-hidden">
+        <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-60"></div>
+        <div class="absolute bottom-[0%] left-[-5%] w-72 h-72 bg-purple-50 rounded-full blur-3xl opacity-60"></div>
+        
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center space-x-2 bg-blue-50 border border-blue-100 px-4 py-1 rounded-full mb-8">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                <span class="text-blue-700 text-xs font-bold uppercase tracking-wider">2026 Learning Crew</span>
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 tracking-tight leading-tight">
+                <span class="block text-slate-700 mb-2 text-xl md:text-2xl font-light tracking-wide">(COWAY-Insights with Looker Studio)</span>
+                <span class="gradient-text">CO-IN with Looker</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-slate-500 font-light max-w-2xl mx-auto leading-relaxed">
+                “단순한 학습을 넘어, 실무의 고민을 시각화로 해결하는<br>
+                우리만의 특별한 여정에 여러분을 초대합니다.”
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-6 pb-24">
+        
+        <!-- Mission Section -->
+        <section class="mb-24">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6">왜 이 크루를<br><span class="text-blue-600">개설했을까요?</span></h2>
+                    <p class="text-slate-600 leading-relaxed font-light text-lg">
+                        매일 마주하는 방대한 데이터, 혹시 엑셀 창만 띄워놓고 막막하지 않으셨나요? <br><br>
+                        <strong>AX 시대</strong>의 핵심은 데이터를 보고 '말할 수 있는 능력'입니다. 
+                        누구나 쉽게 실무 데이터를 가치 있게 바꿀 수 있도록 돕고 싶어 이 자리를 마련했습니다.
+                    </p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-6 rounded-3xl shadow-xl shadow-slate-100 border border-slate-50 hover-lift">
+                        <i class="fas fa-magic text-blue-500 mb-4 text-xl"></i>
+                        <h4 class="font-bold mb-1">Easy</h4>
+                        <p class="text-xs text-slate-400 leading-snug">코딩 없이 클릭만으로<br>만드는 시각화</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-xl shadow-slate-100 border border-slate-50 mt-8 hover-lift">
+                        <i class="fas fa-bolt text-amber-500 mb-4 text-xl"></i>
+                        <h4 class="font-bold mb-1">Fast</h4>
+                        <p class="text-xs text-slate-400 leading-snug">수기 관리 업무를<br>자동 대시보드로</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Information Cards -->
+        <div class="grid md:grid-cols-2 gap-6 mb-24">
+            <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-clock text-7xl"></i>
+                </div>
+                <h3 class="text-sm font-bold text-blue-600 mb-4 uppercase tracking-widest">When</h3>
+                <p class="text-2xl font-bold text-slate-800 mb-2">매주 수요일 점심</p>
+                <p class="text-slate-500 font-light">2026.03.18 ~ 06.17<br>11:30 - 12:30 (1hr)</p>
+            </div>
+            <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-map-marker-alt text-7xl"></i>
+                </div>
+                <h3 class="text-sm font-bold text-purple-600 mb-4 uppercase tracking-widest">Where</h3>
+                <p class="text-2xl font-bold text-slate-800 mb-2">본사 G-TOWER</p>
+                <p class="text-slate-500 font-light">지정 회의실 (추후 공지)<br>8~10명의 소수 정예 운영</p>
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <section class="mb-24">
+            <h2 class="text-3xl font-bold mb-12 text-center">함께 걸어갈 <span class="text-blue-600">3개월의 여정</span></h2>
+            <div class="space-y-1 relative">
+                <div class="step-line"></div>
+                
+                <!-- Week 1 -->
+                <div class="relative flex items-start mb-12 z-10 group">
+                    <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-blue-100 transition-transform group-hover:scale-110">1</div>
+                    <div class="ml-6 pt-1">
+                        <h4 class="text-xl font-bold mb-2">첫 만남: 방향성 나누기</h4>
+                        <p class="text-slate-500 font-light leading-relaxed">크루 오리엔테이션 및 각자 업무에서 해결하고 싶은 대시보드 니즈를 함께 공유합니다.</p>
+                    </div>
+                </div>
+
+                <!-- Week 2-3 -->
+                <div class="relative flex items-start mb-12 z-10 group">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold transition-transform group-hover:scale-110">2</div>
+                    <div class="ml-6 pt-1">
+                        <div class="flex items-center mb-1">
+                            <h4 class="text-xl font-bold">기초 다지기</h4>
+                            <span class="ml-3 bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded-full border border-blue-100 font-bold uppercase tracking-tight">강사 초빙</span>
+                        </div>
+                        <p class="text-slate-500 font-light leading-relaxed">사내 강사님의 실무 사례 중심 강의를 통해 루커스튜디오의 핵심 인터페이스를 익힙니다.</p>
+                    </div>
+                </div>
+
+                <!-- Week 4-11 -->
+                <div class="relative flex items-start mb-12 z-10 group">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold transition-transform group-hover:scale-110">4</div>
+                    <div class="ml-6 pt-1">
+                        <h4 class="text-xl font-bold mb-2">몰입과 구현</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                            <div class="flex items-center text-sm text-slate-600 bg-white p-3 rounded-xl border border-slate-50 shadow-sm">
+                                <i class="fas fa-link text-blue-400 mr-3"></i> 구글 시트 데이터 연동
+                            </div>
+                            <div class="flex items-center text-sm text-slate-600 bg-white p-3 rounded-xl border border-slate-50 shadow-sm">
+                                <i class="fas fa-sliders-h text-blue-400 mr-3"></i> 사용자 필터 구현
+                            </div>
+                            <div class="flex items-center text-sm text-slate-600 bg-white p-3 rounded-xl border border-slate-50 shadow-sm">
+                                <i class="fas fa-calculator text-blue-400 mr-3"></i> 계산 필드 및 지표 생성
+                            </div>
+                            <div class="flex items-center text-sm text-slate-600 bg-white p-3 rounded-xl border border-slate-50 shadow-sm">
+                                <i class="fas fa-palette text-blue-400 mr-3"></i> 대시보드 디자인 최적화
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 12-13 -->
+                <div class="relative flex items-start z-10 group">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold transition-transform group-hover:scale-110">12</div>
+                    <div class="ml-6 pt-1">
+                        <h4 class="text-xl font-bold mb-2 text-slate-800 uppercase tracking-tight">Final: 결실 맺기</h4>
+                        <p class="text-slate-500 font-light leading-relaxed">완성된 나만의 대시보드를 시연하고, 서로의 인사이트를 나누며 3개월의 성장을 축하합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Message from Leader -->
+        <section class="bg-blue-600 rounded-[2.5rem] p-12 text-center text-white relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
+                </svg>
+            </div>
+            
+            <i class="fas fa-quote-left text-blue-300 text-4xl mb-6"></i>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 leading-snug">
+                "혼자 가면 막막하지만,<br>함께 가면 확신이 됩니다."
+            </h2>
+            <p class="text-blue-100 font-light max-w-lg mx-auto mb-10 leading-relaxed text-lg">
+                데이터가 두려웠던 분들도 3개월 후에는<br>
+                당당하게 대시보드를 공유하는 동료가 되어 있을 것입니다.<br>
+                정성을 다해 준비한 이 여정에 함께 해주세요.
+            </p>
+            <div class="text-sm font-bold text-blue-200 uppercase tracking-[0.3em]">
+                CO-IN Crew
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-12 border-t border-slate-100 text-center text-slate-400">
+        <p class="text-xs font-medium tracking-widest uppercase mb-2">Coway Learning Crew Program</p>
+        <p class="text-[10px] opacity-60 italic">신청 마감: 2026.03.13(금) | 사내 시스템을 통해 신청 바랍니다.</p>
+    </footer>
+
+</body>
+</html>
