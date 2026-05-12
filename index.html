@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COWAY NetZero Roadmap V8</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -187,13 +186,8 @@ input[type=range]::-webkit-slider-thumb{height:18px;width:18px;border-radius:50%
     <div class="flex items-center gap-2 flex-wrap">
       <button onclick="setPeriod(2033)" id="btn-2033" class="per-btn">중기 전략 (~2033)</button>
       <button onclick="setPeriod(2050)" id="btn-2050" class="per-btn active">장기 로드맵 (~2050)</button>
-      <span id="lbl-loaded" class="text-xs px-3 py-1 rounded-full" style="background:var(--amber-bg);color:var(--amber);font-weight:500;">샘플 데이터</span>
     </div>
   </div>
-  <label class="cursor-pointer flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm hover:opacity-90 transition-all" style="background:var(--navy);color:#fff;">
-    <i class="fas fa-file-excel" style="color:#4ADE80;"></i> Excel 로드
-    <input type="file" id="xl-file" class="hidden" accept=".xlsx">
-  </label>
   </div>
 </header>
 
@@ -536,11 +530,18 @@ let P=JSON.parse(JSON.stringify(P_DEFAULT));
 let CALC={};
 
 function calcAll(p){
-  const tgt=SCENARIO_YEARS.map((y,i)=>{
-    if(y<=2023)return p.base;
-    if(y<=2033)return Math.round(p.base+(p.target2033-p.base)/10*(y-2023));
-    return Math.max(0,Math.round(p.target2033*(2050-y)/17));
-  });
+  // SBTi ACA: 기준연도 4.2%/년 절대량 감축 → 758t/년 when base=18041
+  // 2033~2050: target2033의 6%/년 감축 → 540t/년 when target2033=9000
+  const tgt=(()=>{
+    const step=Math.round(p.base*0.042);          // 연간 감축 스텝 (SBTi ACA)
+    const longStep=Math.round(p.target2033*0.06); // 장기 감축 스텝
+    return SCENARIO_YEARS.map((y,i)=>{
+      if(y<=2023)return p.base;
+      if(y<2033)return Math.max(p.target2033,p.base-step*(y-2023));
+      if(y===2033)return p.target2033;
+      return Math.max(0,p.target2033-longStep*(y-2033));
+    });
+  })();
   const bau=SCENARIO_YEARS.map(y=>y===2023?p.base:y===2024?17811:y===2025?16364:p.bau);
   let ev_r,hev_r;
   if(p.evMethod==='A'){ev_r=p.diesel_ghg-p.ev_ghg;hev_r=p.diesel_ghg-p.hev_ghg;}
@@ -615,6 +616,7 @@ function applyParams(){
   else if(['roadmap','methods','costs'].includes(tab)){setPeriod(period);}
 }
 function rebuildSV9(){
+  if(!CALC||!CALC.years||!CALC.years.length){sc.innerHTML='<p style="padding:20px;color:var(--muted);">가정값 적용 후 산정 결과가 표시됩니다.</p>';return;}
   const C=CALC;
   SV9.years=C.years;SV9.bau=C.bau;SV9.tgt=C.tgt;SV9.inv=C.inv;
   SV9.rec=C.rec;SV9.solar=C.solar;SV9.ev=C.ev_total;
@@ -672,7 +674,7 @@ function setSv9Period(p){
   if(btn)btn.classList.add('active');
   if(tab==='summary')renderSummary();
 }
-function refreshSummaryFromExcel(){if(tab==='summary')renderSummary();}
+function refreshSummaryFromExcel(){}
 function toggleSv9Edit(){
   sv9EditMode=!sv9EditMode;
   const btn=document.getElementById('sv9-edit-btn');
@@ -795,18 +797,7 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 // ─── FILE LOAD ────────────────────────────────────────────────────────
-document.getElementById('xl-file').onchange=e=>{
-  const r=new FileReader();
-  r.onload=ev=>{
-    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
-    years=rows[0].slice(1).map(v=>Number(v));raw=rows.slice(1);
-    const lbl=document.getElementById('lbl-loaded');
-    lbl.textContent='데이터 로드 완료';lbl.style.background='#D1FAE5';lbl.style.color='#065F46';
-    setPeriod(period);
-    refreshSummaryFromExcel(); // Summary 숫자 즉시 반영
-  };r.readAsArrayBuffer(e.target.files[0]);
-};
+
 
 // ─── PERIOD ───────────────────────────────────────────────────────────
 function setPeriod(p){
@@ -916,10 +907,12 @@ function updateChart(){
   if(tab==='roadmap'){
     // 스택 순서 (배열 순서 = 아래→위): 목표배출량(회색) → 투자감축량(파랑) → REC감축량(연파랑)
     // 넷제로 목표선: 목표배출량 값으로 선을 그려 회색/파랑 경계에 표시
+    const needArr2=dY.map((_,i)=>Math.max(0,get(0,i)-get(1,i)));
+    const invCap2=dY.map((_,i)=>Math.min(get(2,i),needArr2[i]));
     ds=[
       {label:'목표 배출량',data:dY.map((_,i)=>get(1,i)),backgroundColor:'#E2EAF4',type:'bar'},
-      {label:'투자 감축량',data:dY.map((_,i)=>get(2,i)),backgroundColor:'#0095D0',type:'bar'},
-      {label:'REC 감축량', data:dY.map((_,i)=>get(3,i)),backgroundColor:'#7EC8E8',type:'bar'},
+      {label:'투자 감축량',data:invCap2,backgroundColor:'#0095D0',type:'bar'},
+      {label:'REC 감축량', data:dY.map((_,i)=>Math.max(0,get(3,i))),backgroundColor:'#7EC8E8',type:'bar'},
       {label:'넷제로 목표선',data:dY.map((_,i)=>get(1,i)),borderColor:'#E53E3E',type:'line',
         pointStyle:'line',borderDash:[5,5],borderWidth:2,fill:false,pointRadius:0,tension:0},
     ];
@@ -1084,7 +1077,7 @@ function openCostDetail(i){
 }
 
 // ─── SUMMARY V8 ───────────────────────────────────────────────────────
-let sv7Chart=null, sv7EditMode=false, sv7CurKey=null, sv8ExcelLoaded=false;
+let sv7Chart=null, sv7EditMode=false, sv7CurKey=null;
 
 // ── 연도별 기본 데이터 (PPT 슬라이드 2 기반) ──
 const SV8_STATIC={
@@ -1134,7 +1127,7 @@ const SV8_MD_DEFAULT={
 };
 let SV7_MD={};
 (function(){
-  const APP_VERSION='v12';
+  const APP_VERSION='v13';
   try{
     const storedVer=localStorage.getItem('cw_app_version');
     if(storedVer!==APP_VERSION){
@@ -1430,7 +1423,7 @@ function _sv9Charts(lbls,lblFull,tgt,inv,rec,net){
       options:{responsive:true,maintainAspectRatio:false,
         plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,31,46,.93)',titleColor:'#fff',bodyColor:'rgba(255,255,255,.75)',padding:10,borderRadius:8,callbacks:{title:i=>lblFull[i[0].dataIndex]+'년',label:i=>'  '+i.dataset.label+': '+Math.round(i.parsed.y).toLocaleString()+' 톤'}}},
         scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#1C2B3A',font:{size:9},maxRotation:0}},y:{stacked:true,min:0,max:22000,grid:{color:'#F2F6F9'},border:{display:false},ticks:{color:'#8FA0AE',font:{size:9},stepSize:5000,callback:v=>v?v/1000+'k':'0'}}}},
-      plugins:[pctP]});
+      plugins:[pctP,surplusPlugin]});
   }
   const cr=document.getElementById('sv9-cr');
   if(cr){
@@ -1621,8 +1614,59 @@ function openSv7Mo(key){
   const d=SV7_MD[key];if(!d)return;
   sv7CurKey=key;
   document.getElementById('sv7-mo-tag').textContent=d.tag;
-  document.getElementById('sv7-mo-title').textContent=d.title;
-  document.getElementById('sv7-mo-body').innerHTML=d.body;
+
+  // CALC 연동 동적 팝업
+  if(key==='ev'&&CALC&&CALC.ev_total&&CALC.ev_total.length){
+    const maxEv=Math.round(Math.max(...CALC.ev_total));
+    const i33=CALC.years.indexOf(2033);
+    const annSav=i33>=0?parseFloat((CALC.ev_saving[i33]).toFixed(1)):0;
+    const cumSav=i33>=0?Math.round(Math.abs(CALC.net_cumul[i33])):0;
+    document.getElementById('sv7-mo-title').textContent=
+      `전기차/HEV 전환 — ${(P.giseobon_ev[CALC.years.indexOf(2030)]||1019)+(P.beopin_ev[CALC.years.indexOf(2030)]||144)+(P.giseobon_hev[CALC.years.indexOf(2030)]||437)+(P.beopin_hev[CALC.years.indexOf(2030)]||0)}대 전환 계획`;
+    document.getElementById('sv7-mo-body').innerHTML=`
+<p>경유차 → EV/HEV 단계 전환. EV 대당 감축량 ${CALC.ev_r.toFixed(2)}톤, HEV ${CALC.hev_r.toFixed(2)}톤 (${P.evMethod}방식).</p>
+<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;">
+<thead><tr>
+  <th style="background:var(--surface);padding:7px 12px;text-align:left;border-bottom:1px solid var(--border);color:var(--sub);">구분</th>
+  <th style="background:var(--surface);padding:7px 12px;text-align:right;border-bottom:1px solid var(--border);color:var(--sub);">기존 (경유)</th>
+  <th style="background:var(--surface);padding:7px 12px;text-align:right;border-bottom:1px solid var(--border);color:var(--sub);">전환 후 (EV/HEV)</th>
+</tr></thead><tbody>
+  <tr><td style="padding:7px 12px;border-bottom:1px solid var(--border);color:var(--sub);">리스비용</td><td style="padding:7px 12px;text-align:right;border-bottom:1px solid var(--border);">${P.cost_diesel_lease}만원/년</td><td style="padding:7px 12px;text-align:right;border-bottom:1px solid var(--border);">EV ${P.cost_ev_lease} / HEV ${P.cost_hev_lease}만원</td></tr>
+  <tr><td style="padding:7px 12px;border-bottom:1px solid var(--border);color:var(--sub);">연료/충전비</td><td style="padding:7px 12px;text-align:right;border-bottom:1px solid var(--border);">${P.cost_diesel_fuel}만원/년</td><td style="padding:7px 12px;text-align:right;border-bottom:1px solid var(--border);">급속 ${P.cost_ev_fast} / 완속 ${P.cost_ev_slow} / HEV ${P.cost_hev_fuel}만원</td></tr>
+  <tr><td style="padding:7px 12px;color:var(--sub);">온실가스 저감</td><td colspan="2" style="padding:7px 12px;text-align:right;font-weight:600;color:var(--cw);">EV –${CALC.ev_r.toFixed(2)}t · HEV –${CALC.hev_r.toFixed(2)}t / 대/년</td></tr>
+</tbody></table>
+<hr class="sv7-mo-hr">
+<div class="sv7-stat-row">
+  <div class="sv7-stat"><div class="sv7-stat-n">–${maxEv.toLocaleString()}톤</div><div class="sv7-stat-l">완료 시 연간 저감</div></div>
+  <div class="sv7-stat"><div class="sv7-stat-n">연 ${annSav}억</div><div class="sv7-stat-l">절감 (EV/HEV 완료 후)</div></div>
+  <div class="sv7-stat"><div class="sv7-stat-n">${cumSav}억</div><div class="sv7-stat-l">2033년 누적 순손익</div></div>
+</div>`;
+  } else if(key==='solar'&&CALC&&CALC.solar){
+    const maxSolar=Math.round(Math.max(...CALC.solar));
+    const i28=CALC.years.indexOf(2028);
+    const rev28=i28>=0?parseFloat((CALC.solar_revenue[i28]).toFixed(1)):0;
+    document.getElementById('sv7-mo-title').textContent='자가 태양광 발전소 운영 계획';
+    document.getElementById('sv7-mo-body').innerHTML=`
+<p>${P.solar.filter(s=>s.capacity>0).map(s=>`<span class="hi">${s.name}</span>: 감축 ${s.capacity}t, 건설비 ${s.buildCost}백만원, 매전수익 ${s.revenue}백만원/년 (${s.startYear}~ ${Math.round(s.firstYearRate*100)}%)`).join('<br>')}</p>
+<hr class="sv7-mo-hr">
+<div class="sv7-stat-row">
+  <div class="sv7-stat"><div class="sv7-stat-n">${P.solar.reduce((s,p)=>s+p.buildCost,0).toLocaleString()}백만</div><div class="sv7-stat-l">총 투자비</div></div>
+  <div class="sv7-stat"><div class="sv7-stat-n">${maxSolar.toLocaleString()}톤</div><div class="sv7-stat-l">연간 최대 저감</div></div>
+  <div class="sv7-stat"><div class="sv7-stat-n">${rev28}억</div><div class="sv7-stat-l">2028년 매전수익</div></div>
+</div>`;
+  } else if(key==='ppa'&&CALC&&CALC.ppa){
+    const maxPpa=Math.round(Math.max(...CALC.ppa));
+    document.getElementById('sv7-mo-title').textContent=`전력구매계약(PPA) — ${P.ppa_capacity}kW 재생에너지 직접 구매`;
+    document.getElementById('sv7-mo-body').innerHTML=`
+<p>재생에너지 발전사와 <span class="hi">${P.ppa_capacity}kW</span> 규모 PPA로 연 <span class="hi">${maxPpa.toLocaleString()}톤</span> Scope 2 저감.</p>
+<p>${P.ppa_startYear}년부터 적용. 계약단가 ${P.ppa_contractPrice}원/kWh, 시장단가 ${P.ppa_marketPrice}원/kWh (연 ${P.ppa_priceRise}% 상승 가정).</p>`;
+  } else {
+    document.getElementById('sv7-mo-title').textContent=d.title;
+    document.getElementById('sv7-mo-body').innerHTML=d.body;
+  }
+  if(key!=='ev'&&key!=='solar'&&key!=='ppa'){
+    // 위에서 title/body 이미 설정 안 된 경우만
+  }
   const editSec=document.getElementById('sv7-mo-edit');
   if(sv7EditMode){editSec.style.display='';document.getElementById('sv7-mo-ta-title').value=d.title;document.getElementById('sv7-mo-ta-body').value=d.body;}else{editSec.style.display='none';}
   document.getElementById('sv7-mo').classList.add('open');
@@ -2142,6 +2186,7 @@ function openCostPopup(){
 function renderScenario(){
   const sc=document.getElementById('scenario-content');
   if(!sc)return;
+  if(!CALC||!CALC.years||!CALC.years.length){sc.innerHTML='<p style="padding:20px;color:var(--muted);">계산 중...</p>';applyParams();return;}
   const inp=(id,val,step='1',min='')=>
     `<input type="number" id="${id}" value="${val}" step="${step}" ${min?'min="'+min+'"':''} style="width:90px;border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:12px;font-family:inherit;outline:none;" onchange="P_update('${id}',this.value)">`;
   const row=(label,id,val,unit,step,min)=>
@@ -2150,7 +2195,6 @@ function renderScenario(){
       <div style="display:flex;align-items:center;gap:5px;">${inp(id,val,step||'1',min||'')}
         <span style="font-size:10px;color:var(--muted);">${unit||''}</span>
       </div></div>`;
-  const P=window.P;
   const secHead=(title)=>`<h3 style="font-size:13px;font-weight:600;color:var(--navy);margin:16px 0 8px;border-left:3px solid var(--cw);padding-left:8px;">${title}</h3>`;
 
   // B-2 연도별 대수 그리드
@@ -2326,7 +2370,7 @@ function renderScenario(){
       ].map(([label,key,color])=>`<tr>
         <td style="padding:5px 10px;color:var(--sub);border-bottom:.5px solid var(--border);">${label}</td>
         ${[2026,2028,2030,2033,2040,2050].map(y=>{
-          const i=CALC.years.indexOf(y);
+          const i=(CALC&&CALC.years)?CALC.years.indexOf(y):-1;
           if(i<0)return '<td style="padding:5px 10px;text-align:right;color:var(--muted);">—</td>';
           const v=CALC[key][i];
           const isSurplus=key==='rec'&&CALC.rec_raw[i]<0;
