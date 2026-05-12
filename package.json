@@ -1,7 +1,0 @@
-{
-  "name": "coway-esg-validator",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "node"
-  }
-}
